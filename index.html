@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>reveal.js – The HTML Presentation Framework</title>
+		<title>Git: Best Practices and Disaster Recovery</title>
 
 		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
 		<meta name="author" content="Hakim El Hattab">
@@ -15,7 +15,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
 
 		<link rel="stylesheet" href="css/reveal.css">
-		<link rel="stylesheet" href="css/theme/black.css" id="theme">
+		<link rel="stylesheet" href="css/theme/serif.css" id="theme">
 
 		<!-- Code syntax highlighting -->
 		<link rel="stylesheet" href="lib/css/zenburn.css">
@@ -40,6 +40,264 @@
 
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
+			  <section data-markdown>
+			    <script type="text/template">
+			    # Git
+			    ### Best Practices and Disaster Recovery
+			    </script>
+			  </section>
+			  <section data-markdown><script type="text/template">
+			      ## Disclaimer
+			      ### I am not a git expert
+			      
+			      * 2004 - 2008: svn
+			      * 2008 - 2015: hg
+			      * 2012 - 2015: hg and some git
+
+			      ### This L&L is tied to our gerrit workflow.
+			  </script></section>
+			  <section data-markdown><script type="text/template">
+			      ## Git author: Linus Torvalds
+			      
+			      Youtube: "Tech Talk: Linus Torvalds on git"
+			  </script></section>
+			  <section>
+			    <section data-markdown><script type="text/template">
+				## Gerrit Workflow
+
+				Clone the repo and create a feature branch:
+				```bash
+			        $ git clone ..
+			        $ git branch ENGI-99
+			        $ git checkout ENGI-99
+			        $ git commit ..
+			        $ git pushgerrit
+				```
+				Then periodically:
+				```bash
+			        $ git checkout master
+			        $ git pull
+			        $ git checkout ENGI-99
+			        $ git rebase master
+			        $ git commit --amend
+				```
+			    </script></section>
+
+			    <section data-markdown><script type="text/template">
+			      ## Gerrit Workflow
+			      ```git
+			        * d (HEAD)
+			       /
+			      *   c (remote/HEAD)
+			      |
+			      *   b
+			      |
+			      *   a
+			      ```
+			    </script></section>
+			    
+			  </section>
+			  <section>
+			    <section data-markdown><script type="text/template">
+				## Gerrit Download
+				```bash
+				$ git fetch .. # download
+				$ git pull .. # download and merge
+				$ git cherry-pick # rewind
+				```
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Gerrit Download
+				```bash
+				$ git fetch
+				```
+
+				```git
+				*   z (FETCHED_HEAD)
+				
+				  * d (HEAD)
+				 /
+				*   c (remote/HEAD)
+				|
+				*   b
+				|
+				*   a
+				```
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Gerrit Download
+				```bash
+				$ git pull
+				```
+
+				```git
+				  * z (HEAD)
+				  |
+				  * d
+				 /
+				*   c (remote/HEAD)
+				|
+				*   b
+				|
+				*   a
+				```
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Gerrit Download
+				```bash
+				$ git cherry-pick [REV]
+				```
+
+				```git
+				  * z (HEAD)
+				  |
+				  * d
+				 /
+				*   c (remote/HEAD)
+				|
+				*   b
+				|
+				*   a
+				```
+			    </script></section>
+			  </section>
+			  <section data-markdown><script type="text/template">
+			      ## Git = Gerrit = Collaboration
+			  </script></section>
+			  <section>
+			    <section data-markdown><script type="text/template">
+			      ## Tips
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Branch for every
+				
+				* Feature
+				* Bug
+				* Experiment
+				* Ticket
+				* (sub) Project
+				* .. etc ..
+
+				Never change anything in master.
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Use aliases
+				```bash
+			        $ git config --global alias.co checkout
+			        $ git config --global alias.br branch
+			        $ git config --global alias.ci commit
+			        $ git config --global alias.st status
+				```
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Use the graph log
+				```bash
+$ git log --graph
+
+$ git config --global alias.glog \
+log --all --pretty='format:%d %Cgreen%h%Creset %an - %s' --graph
+				```
+			    </script></section>
+			  </section>
+			  <section data-markdown><script type="text/template">
+			      ## How to change history?
+			      ### AKA recover from disaster.
+			  </script></section>
+			  <section data-markdown><script type="text/template">
+			      ## I have local changes in master
+
+			      If not yet comitted:
+			      ```bash
+			      $ git stash
+			      $ git co ENGI-99
+			      $ git stash pop
+			      ```
+			      If committed, `reset` and keep changes for `stash`:
+			      ```bash
+			      $ git reset --soft HEAD~1
+			      ```
+			  </script></section>
+			  <section data-markdown><script type="text/template">
+			      ## I pulled commits into my feature branch
+			      
+			      Uncommit and destroy all changes:
+			      ```bash
+			      $ git reset --hard HEAD~1
+			      ```
+			  </script></section>
+			  <section data-markdown><script type="text/template">
+			      ## I forgot to amend
+			      ```bash
+			      $ git reset --soft HEAD~1
+			      $ git ci --amend
+			      ```
+			  </script></section>
+			  <section>
+			    <section data-markdown><script type="text/template">
+				## I forgot to amend ..
+				## twice ..
+				## and I pulled in commits into my feature branch in between.
+				```bash
+			        $ git rebase --interactive HEAD~3
+				```
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Rebase
+				```bash
+				$ git rebase --interactive HEAD~3
+				```
+
+				```git
+				  * z (HEAD)
+				  |
+				  * y pulled from master
+				  |
+				  * d first commit
+				 /
+				*   c (remote/HEAD)
+				|
+				```
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Rebase
+				```bash
+				$ git rebase --interactive HEAD~3
+				```
+
+				```git
+				pick d first commit
+				pick y pulled from master
+				pick z ..
+				```
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Rebase
+				```bash
+				$ git rebase --interactive HEAD~3
+				```
+
+				```git
+				pick d first commit
+				drop y pulled from master
+				squash z ..
+				```
+			    </script></section>
+			    <section data-markdown><script type="text/template">
+				## Rebase
+				```git
+				  * d first commit (HEAD)
+				 /
+				*   c (remote/HEAD)
+				|
+				```
+			    </script></section>
+			  </section>
+			  <section data-markdown><script type="text/template">
+				## Questions?
+			    </script></section>
+			</div>
+			
+			<div class="_slides" style="display:none;">
 				<section>
 					<h1>Reveal.js</h1>
 					<h3>The HTML Presentation Framework</h3>
